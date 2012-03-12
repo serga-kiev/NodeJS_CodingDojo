@@ -1,26 +1,7 @@
-var strings = {
-    'connected':'[sys][time]%time%[/time]: You\'ve connected to the server as [user]%name%[/user].[/sys]',
-    'messageSent':'[out][time]%time%[/time]: [user]%name%[/user]: %text%[/out]',
-    'messageReceived':'[in][time]%time%[/time]: [user]%name%[/user]: %text%[/in]',
-    "questionFromServer":'Question id: [questionId]. Please, answer, how much is: [serverQuestion]'
-};
-
 var userId = 222; //Configured user ID
 
-var generateAnswer = function (quest) {
-    var answer;
-    if (quest.event == 'questionFromServer') {
-        answer = eval(quest.message);
-        console.log(answer);
-        quest.message = answer;
-    } else {
-        console.log('Cannot answer to non-question JSON!');
-        return false;
-    }
-    return quest;
-};
-
 window.onload = function () {
+    var socket;
     if (navigator.userAgent.toLowerCase().indexOf('chrome') != -1) {
         socket = io.connect('http://localhost:8080', {'transports':['xhr-polling']});
     } else {
@@ -53,9 +34,9 @@ window.onload = function () {
          document.querySelector('#input').value = '';
          }
          };
-        document.querySelector('#send').onclick = function () {
-            socket.send(escape(document.querySelector('#input').value));
-            document.querySelector('#input').value = '';
-        };*/
+         document.querySelector('#send').onclick = function () {
+         socket.send(escape(document.querySelector('#input').value));
+         document.querySelector('#input').value = '';
+         };*/
     });
 };

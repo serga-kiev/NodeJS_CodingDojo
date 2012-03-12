@@ -1,8 +1,12 @@
 var util = require('util');
 var cronJob = require('cron').CronJob;
+var dbInterface = require('./mongodb-native-driver-interface.js');
+
+//var fs = require('fs');
 var usersScores = new Object();
 var usersQuestions = new Object();
-usersScores['222'] = 0;
+
+//fs.mkdir('d:/df');
 
 function getRandomNumber(maxvalue) {
     if (arguments.length < 1) {
@@ -38,6 +42,26 @@ var generateVerification = function (quest) {
 };
 
 
+
+/* Express server instance */
+var expressServer = require('express').createServer();
+expressServer.get('/', function (req, res) {
+    res.send('Hello, world!');
+});
+expressServer.get('/:id', function (req, res) {
+    res.send('Hello, ' + req.params.id);
+});
+expressServer.listen('3000');
+
+
+/* DB interaction example */
+dbInterface.createGame(3, 'TitanWar1');
+dbInterface.registerUserInGame(3, 2, 'vanya12', 'JavaScript', 10);
+dbInterface.getAllUsers(3);
+dbInterface.updateUserScore(3, 2, 5);
+
+
+/* SocketIO server instance */
 var io = require('socket.io').listen(8080);
 io.set('log level', 1);
 
@@ -45,15 +69,14 @@ io.sockets.on('connection', function (socket) {
     var ID = (socket.id).toString().substr(0, 5);
     var userId;
     var time = (new Date).toLocaleTimeString();
-    var questionInterval = 5000;
+    var questionIntervalPattern = '*/5 * * * * *';
 
     socket.on('userGreet', function (usrId) {
         if (usersScores[usrId] != undefined) {
-            util.log('greetings, ' + usrId);
+            util.log('Greetings, ' + usrId);
             userId = usrId;
             socket.json.send({'event':'connected', 'name':userId, 'time':time});
-
-            cronJob('* * * * * *', function () {
+            cronJob(questionIntervalPattern, function () {
                     var questionId = generateQuestionId(userId);
                     var questionMessage = generateQuestionMessage();
                     socket.json.send({'event':'questionFromServer', 'name':userId, 'time':time, 'questionId':questionId, 'message':questionMessage});
@@ -61,7 +84,6 @@ io.sockets.on('connection', function (socket) {
                         usersQuestions[userId] = new Array();
                     }
                     usersQuestions[userId][questionId] = new Array();
-
                     usersQuestions[userId][questionId].push(questionMessage);
                     usersQuestions[userId][questionId].push(generateVerification(questionMessage));
                 }
@@ -74,11 +96,24 @@ io.sockets.on('connection', function (socket) {
     socket.on('message', function (msg) {
         var isCorrect;
         if (msg) {
-            util.log('Message received ' + usersQuestions[msg.name][msg.questionId][1]);
-            isCorrect = (msg.message == usersQuestions[msg.name][msg.questionId][1]);
-            var time = (new Date).toLocaleTimeString();
-            socket.json.send({'event':'messageSent', 'name':userId, 'text':'Your answer: ' + msg.message + '. Correct: ' + isCorrect, 'time':time});
+            try {
+                isCorrect = (msg.message == (usersQuestions[msg.name][msg.questionId][1]));
+                util.log('Message received ' + msg.message + '. Correct: ' + isCorrect);
+                var time = (new Date).toLocaleTimeString();
+                //socket.json.send({'event':'messageSent', 'name':userId, 'text':'Your answer: ' + msg.message + '. Correct: ' + isCorrect, 'time':time});
+            } catch (Exception) {
+                util.log('Invalid message was received');
+            }
         }
     });
-});
 
+    socket.on('disconnect', function () {
+        console.log('User ' + userId + ' has disconnected!');
+        //console.log('Listener ' + socket.listeners('userGreet'));
+        //socket.removeAllListeners('userGreet');
+    });
+
+    socket.on('error', function (msg) {
+        util.log('Error event occurred ' + msg);
+    });
+});
