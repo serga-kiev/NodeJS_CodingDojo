@@ -9,6 +9,7 @@
 
     <link href="css/docs.css" rel="stylesheet">
     <link href="css/google-code-prettify/prettify.css" rel="stylesheet">
+    <link href="css/custom.css" rel="stylesheet">
 
 </head>
 <body>
@@ -22,6 +23,7 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </a>
+
             <div class="nav-collapse">
                 <ul class="nav">
                     <li class="active">
@@ -50,23 +52,33 @@
     <header class="jumbotron masthead">
         <div class="inner">
             <p>Host new game</p>
+            <form method="get" class="well centered" style="width: 390px;">
+                <div class="centered">
+                    <span class="help-inline form-label">Game Name</span>
+                    <input type="text" class="span3" placeholder="Type in the game name here">
+                    </br>
+                    <span class="help-inline form-label">Game Duration</span>
+                    <input type="text" class="span3" placeholder="Type in the game duration here">
+                </div>
+            </form>
             <p class="download-info">
                 <a href="register-game.html" class="btn btn-primary btn-large">Host new game</a>
-                <a href="" class="btn btn-large">Connect game</a>
             </p>
         </div>
-
     </header>
 
     <footer class="footer">
         <p class="pull-right"><a href="#">Back to top</a></p>
-        <p style="width: 600px;">This is a footer block. It's not too sophisticated - to leave it blank. So, Lorem ipsum dolor sit amet,
+
+        <p style="width: 600px;">This is a footer block. It's not too sophisticated - to leave it blank. So, Lorem ipsum
+            dolor sit amet,
             tempor porta vehicula semper justo, mi mi porttitor ridiculus curabitur</p>
-  </footer>
+    </footer>
 </div>
+
 
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
 <script src="http://localhost:8080/socket.io/socket.io.js" type="text/javascript"></script>
-<script src="js/client.js"  type="text/javascript"></script>
+<script src="js/client.js" type="text/javascript"></script>
 </body>
 </html>

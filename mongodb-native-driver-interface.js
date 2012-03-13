@@ -45,8 +45,6 @@ exports.registerUserInGame = function (gameId, userId, userName, userLanguage, i
     var jsonNewUser = {'name':userName, 'score': initialScore, language: userLanguage};
     var jsonUserQuery = {};
     jsonUserQuery[jsonUserExistsQueryKey] = jsonNewUser;
-    //console.log(jsonUserExistsQuery);
-    //console.log(jsonUserQuery);
     client.open(function (err, client) {
         if (err) throw err;
         client.collection('games', function (err, collection) {
@@ -79,8 +77,6 @@ exports.getAllUsers = function (gameId) {
                 } else {
                     users = cursor.players;
                     console.dir(users);
-                    //for (k in users) if (users.hasOwnProperty(k)) usersCount++;  // Does not seem to be working this way with JSON object (
-                    //console.log("There are " + usersCount + " users.");
                 }
             });
         });
