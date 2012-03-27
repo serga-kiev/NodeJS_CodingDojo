@@ -23,8 +23,8 @@ exports.close = client.close(function (err, client) {
 
 exports.createGame = function (gameId, gameName) {
     var jsonNewGame = {_id:gameId, gameName: gameName, players: {}, startTime: {}, gameDuration:{}, timeLeft:{}};
-    client.open(function (err, client) {
-        if (err) throw err;
+    //client.open(function (err, client) {
+    //    if (err) throw err;
         client.collection('games', function (err, collection) {
             if (err) throw err;
             collection.insert(jsonNewGame, {safe:true}, function (err, objects) {
@@ -34,7 +34,7 @@ exports.createGame = function (gameId, gameName) {
                 }
             });
         });
-    });
+    //});
 };
 
 exports.registerUserInGame = function (gameId, userId, userName, userLanguage, initialScore) {
@@ -45,8 +45,8 @@ exports.registerUserInGame = function (gameId, userId, userName, userLanguage, i
     var jsonNewUser = {'name':userName, 'score': initialScore, language: userLanguage};
     var jsonUserQuery = {};
     jsonUserQuery[jsonUserExistsQueryKey] = jsonNewUser;
-    client.open(function (err, client) {
-        if (err) throw err;
+    //client.open(function (err, client) {
+    //    if (err) throw err;
         client.collection('games', function (err, collection) {
             if (!collection) {
                 console.warn('There is no registered game with specified id!');
@@ -62,25 +62,25 @@ exports.registerUserInGame = function (gameId, userId, userName, userLanguage, i
                 });
             }
         });
-    });
+    //});
 };
 
 exports.getAllUsers = function (gameId) {
     var users;
     var usersCount;
-    client.open(function (err, client) {
-        if (err) throw err;
+    //client.open(function (err, client) {
+    //    if (err) throw err;
         client.collection('games', function (err, collection) {
             collection.findOne({_id:gameId}, function (err, cursor) {
                 if (!cursor) {
                     console.warn('There are no registered game with such id!');
                 } else {
                     users = cursor.players;
-                    console.dir(users);
+                    console.dir('Registered users in game: ' + users);
                 }
             });
         });
-    });
+    //});
     return users;
 };
 
@@ -92,8 +92,8 @@ exports.updateUserScore = function (gameId, userId, updateBy) {
     var jsonUserUpdate = {};
     jsonUserUpdate[jsonUserQueryKey] = updateBy;
     //console.log(jsonUserUpdate);
-    client.open(function (err, client) {
-        if (err) throw err;
+    //client.open(function (err, client) {
+    //    if (err) throw err;
         client.collection('games', function (err, collection) {
             collection.findOne({_id:gameId}, function (err, cursor) {
                     if (!cursor) {
@@ -114,7 +114,7 @@ exports.updateUserScore = function (gameId, userId, updateBy) {
                 }
             );
         });
-    })
+    //})
 };
 
 /* This function registers user in separate from game instance collection. Its deprecated

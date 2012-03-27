@@ -1,6 +1,7 @@
 var util = require('util');
 var cronJob = require('cron').CronJob;
 var dbInterface = require('./mongodb-native-driver-interface.js');
+var customUtils = require('./utils.js');
 
 //var fs = require('fs');
 var usersScores = new Object();
@@ -8,42 +9,8 @@ var usersQuestions = new Object();
 
 //fs.mkdir('d:/df');
 
-function getRandomNumber(maxvalue) {
-    if (arguments.length < 1) {
-        maxvalue = 10;
-    }
-    return Math.floor(Math.random() * (maxvalue + 1));
-}
 
-var generateQuestionId = function (usrId) {
-    var newDate = new Date();
-    return newDate.getTime() + usrId.toString();
-};
-
-var generateQuestionMessage = function () {
-    var trigger = getRandomNumber(1);
-    switch (trigger) {
-        case 0:
-            return getRandomNumber() + ' + ' + getRandomNumber();
-            break;
-        case 1:
-            return getRandomNumber().toString() + ' * ' + getRandomNumber().toString();
-            break;
-        default:
-            return '2+2';
-            break;
-    }
-};
-
-var generateVerification = function (quest) {
-    var verification = eval(quest);
-    console.log(verification);
-    return verification;
-};
-
-
-
-/* Express server instance */
+/* Express server instance
 var expressServer = require('express').createServer();
 expressServer.get('/', function (req, res) {
     res.send('Hello, world!');
@@ -52,13 +19,25 @@ expressServer.get('/:id', function (req, res) {
     res.send('Hello, ' + req.params.id);
 });
 expressServer.listen('3000');
+ */
+
+/* Connect server instance */
+var connect = require('connect');
+var oneDay = 86400000; //Cache life duration
+
+connect(
+    connect.static(__dirname + '/public', { maxAge: oneDay })
+).listen(3000);
 
 
 /* DB interaction example */
-dbInterface.createGame(3, 'TitanWar1');
-dbInterface.registerUserInGame(3, 2, 'vanya12', 'JavaScript', 10);
-dbInterface.getAllUsers(3);
-dbInterface.updateUserScore(3, 2, 5);
+dbInterface.open(
+    dbInterface.createGame("22332233", 'TitanWar1') // ID of the game simultaneously is the "unique pass, for users to register in game"
+    );
+
+dbInterface.registerUserInGame("22332233", 2, 'vanya12', 'JavaScript', 10);
+dbInterface.getAllUsers("22332233");
+dbInterface.updateUserScore("22332233", 2, 5);
 
 
 /* SocketIO server instance */
@@ -66,6 +45,7 @@ var io = require('socket.io').listen(8080);
 io.set('log level', 1);
 
 io.sockets.on('connection', function (socket) {
+    util.log('Attempt to connect was emitted');
     var ID = (socket.id).toString().substr(0, 5);
     var userId;
     var time = (new Date).toLocaleTimeString();
@@ -77,19 +57,19 @@ io.sockets.on('connection', function (socket) {
             userId = usrId;
             socket.json.send({'event':'connected', 'name':userId, 'time':time});
             cronJob(questionIntervalPattern, function () {
-                    var questionId = generateQuestionId(userId);
-                    var questionMessage = generateQuestionMessage();
+                    var questionId = customUtils.generateQuestionId(userId);
+                    var questionMessage = customUtils.generateQuestionMessage();
                     socket.json.send({'event':'questionFromServer', 'name':userId, 'time':time, 'questionId':questionId, 'message':questionMessage});
                     if (usersQuestions[userId] == undefined) {
                         usersQuestions[userId] = new Array();
                     }
                     usersQuestions[userId][questionId] = new Array();
                     usersQuestions[userId][questionId].push(questionMessage);
-                    usersQuestions[userId][questionId].push(generateVerification(questionMessage));
+                    usersQuestions[userId][questionId].push(customUtils.generateVerification(questionMessage));
                 }
             );
         } else {
-            util.log('There is no registered users with ID ' + userId);
+            util.log('There is no registered users with ID ' + usrId);
         }
     });
 
