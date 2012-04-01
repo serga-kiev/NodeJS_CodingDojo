@@ -18,9 +18,9 @@ var generateAnswer = function (quest) {
 window.onload = function () {
     var socket;
     if (navigator.userAgent.toLowerCase().indexOf('chrome') != -1) {
-        socket = io.connect('http://localhost:8080', {'transports':['xhr-polling']});
+        socket = io.connect('http://10.0.104.233:8080', {'transports':['xhr-polling']});
     } else {
-        socket = io.connect('http://localhost:8080');
+        socket = io.connect('http://10.0.104.233:8080');
     }
     socket.on('connect', function () {
         socket.emit('userGreet', userId, function () {

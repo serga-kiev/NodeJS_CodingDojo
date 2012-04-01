@@ -1,40 +1,80 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
-        "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html>
 <html>
 <head>
-
-    <title></title>
+    <style>
+        body, select { font-size:14px; }
+        form { margin:5px; }
+        p { color:red; margin:5px; }
+        b { color:blue; }
+    </style>
+    <script src="http://code.jquery.com/jquery-latest.js"></script>
 </head>
 <body>
-<div id="form-holder" class="centered">
-    <form method="get" style="width: 370px;">
-        <div class="well" style=" background-color: yellow;">
-            <span class="help-inline form-label">Game Name</span>
-            <input type="text" class="span3" placeholder="Type in the game name">
-            </br>
-            <span class="help-inline form-label">Game Duration</span>
-            <input type="text" class="span3" placeholder="Type in the game duration">
-        </div>
+<p><b>Results:</b> <span id="results"></span></p>
 
-        <input type="submit" class="btn btn-primary btn-large" style="float: right;" value="Host new game">
+<form>
+    <select name="single">
+        <option>Single</option>
+        <option>Single2</option>
 
-    </form>
-    <!--<form method="get" class="" style="width: 390px;">
+    </select>
+    <select name="multiple" multiple="multiple">
+        <option selected="selected">Multiple</option>
+        <option>Multiple2</option>
 
-        <span class="help-inline form-label">Your unique game pass: </span>
-        <input type="text" class="span3" placeholder="Type in password to join game">
+        <option selected="selected">Multiple3</option>
+    </select><br/>
+    <input type="checkbox" name="check" value="check1" id="ch1"/>
+
+    <label for="ch1">check1</label>
+    <input type="checkbox" name="check" value="check2" checked="checked" id="ch2"/>
+
+    <label for="ch2">check2</label>
+    <input type="radio" name="radio" value="radio1" checked="checked" id="r1"/>
+
+    <label for="r1">radio1</label>
+    <input type="radio" name="radio" value="radio2" id="r2"/>
+
+    <label for="r2">radio2</label>
+</form>
+
+
+
+<form id="create-game-form" class="well pull-left" method="get" style="width: 270px; height:100%; text-align: center;">
+
+        <label class="help-inline ">Game Name</label>
+        <input type="text" class="span3" placeholder="Type in the game name">
         </br>
-        <input type="submit" class="btn btn-large" value="Connect game">
+        <label class="help-inline ">Game Duration</label>
+        <select class="span3">
+            <option>45'</option>
+            <option>1:00</option>
+            <option>1:30</option>
+            <option>2:00</option>
+        </select>
+        <label class="help-inline ">Link to Admin Page:</label>
+        <input type="text" class="span3" placeholder="Host new game to get the link" readonly>
+        <label class="help-inline ">Unique Pass for the Game:</label>
+        <input type="text" class="span3" placeholder="Host new game to get the pass" readonly>
 
-    </form>-->
-    <div style="background-color: red; width: 200px; height: 50px; float: left; ">
+    <br/>
+    <button type="button" id="create-game" class="btn btn-primary btn-large centered">Host New Game</button>
+</form>
+<script>
 
-    </div>
+    function showValues() {
+        var fields = $(":input").serializeArray();
+        console.log(fields);
+        $("#results").empty();
+        jQuery.each(fields, function(i, field){
+            $("#results").append(field.value + " ");
+        });
+    }
 
+    $(":checkbox, :radio").click(showValues);
+    $("select").change(showValues);
+    showValues();
+</script>
 
-    <div style="background:#FA911D; width:240px;height: 40px; float:left;"></div>
-    <div style="background:#0080C0; width:150px; float:left; ">2<br>text<br>text</div>
-    <div style="background:#80FF00; width:130px; float:left;">3<br>текст</div>
-</div>
 </body>
 </html>

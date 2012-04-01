@@ -1,5 +1,5 @@
-.form-label {
-    width: 100px;
+input[readonly] {
+    cursor: text;
 }
 
 .centered {

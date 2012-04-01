@@ -33,10 +33,13 @@ exports.generateVerification = function (quest) {
 
 
 
-var generatePropertiesFile = function() {
+var generatePropertiesFile = function(jsonUser) {
+    var staticComment = '#Coding dojo client properties';
+    var stringBuffer;
+
 
 };
 
-exports.generateZipPackage = function (language, propertiesFilePath) {
+exports.generateZipPackage = function (userId, propertiesFilePath) {
 
 };

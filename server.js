@@ -2,6 +2,7 @@ var util = require('util');
 var cronJob = require('cron').CronJob;
 var dbInterface = require('./mongodb-native-driver-interface.js');
 var customUtils = require('./utils.js');
+var querystring = require('querystring');
 
 //var fs = require('fs');
 var usersScores = new Object();
@@ -32,11 +33,13 @@ connect(
 
 /* DB interaction example */
 dbInterface.open(
-    dbInterface.createGame("22332233", 'TitanWar1') // ID of the game simultaneously is the "unique pass, for users to register in game"
+    dbInterface.createGame("22332233", '1:30') // ID of the game simultaneously is the "unique pass, for users to register in game"
     );
 
 dbInterface.registerUserInGame("22332233", 2, 'vanya12', 'JavaScript', 10);
+dbInterface.registerUserInGame("22332233", 3, 'Ivan', 'JavaScript', 10);
 dbInterface.getAllUsers("22332233");
+dbInterface.getUser("22332233", "2");
 dbInterface.updateUserScore("22332233", 2, 5);
 
 
@@ -46,10 +49,36 @@ io.set('log level', 1);
 
 io.sockets.on('connection', function (socket) {
     util.log('Attempt to connect was emitted');
-    var ID = (socket.id).toString().substr(0, 5);
     var userId;
     var time = (new Date).toLocaleTimeString();
     var questionIntervalPattern = '*/5 * * * * *';
+
+
+    socket.on('createGame', function (serializedForm) {
+        //var formData = querystring.parse(serializedForm);
+        var gameName = serializedForm[0].value;
+        var gameDuration = serializedForm[1].value;
+
+        console.log("Create game event was emitted");
+        console.log("Game name" + gameName);
+        console.log("Game duration" + gameDuration);
+
+        dbInterface.createGame(gameName, gameDuration, function(err, gameId) {
+            if (err) {
+                socket.json.send({'event':'gameCreationFailed', 'name':gameName, 'errorMessage': err.err});
+                console.warn(err.err);
+            } else {
+                socket.json.send({'event':'gameCreated', 'name':gameName, '_id': gameId});
+            }
+        });
+    });
+
+
+
+
+
+
+
 
     socket.on('userGreet', function (usrId) {
         if (usersScores[usrId] != undefined) {
