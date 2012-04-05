@@ -2,6 +2,7 @@ var util = require('util');
 
 /* DataBase variables */
 var mongoDb = require('mongodb');
+var BSON = mongoDb.BSONPure;
 var dataBase = mongoDb.Db;
 var dbServer = mongoDb.Server;
 var dataBaseName = 'coding-dojo-db';
@@ -24,6 +25,7 @@ exports.close = client.close(function (err, client) {
 
 exports.createGame = function (gameName, gameDuration, callback) {
     if (arguments.length >= 2 && gameName != '') {
+        var gameNameLower = gameName.toLowerCase();
         var jsonNewGame = {name:gameName, players:{}, startTime:{}, gameDuration:gameDuration, timeLeft:{}};
         client.collection('games', function (err, collection) {
             if (err) throw err;
@@ -50,44 +52,67 @@ exports.createGame = function (gameName, gameDuration, callback) {
     }
 };
 
-exports.registerUserInGame = function (gameId, userId, userName, userLanguage, initialScore, callback) {
-    if (!initialScore) initialScore = 0;
-    var jsonUserExistsQueryKey = 'players.' + userId;
-    var jsonUserExistsQuery = {};
-    jsonUserExistsQuery[jsonUserExistsQueryKey] = {$exists:true};
-    var jsonNewUser = {'name':userName, 'score':initialScore, language:userLanguage};
-    var jsonUserQuery = {};
-    jsonUserQuery[jsonUserExistsQueryKey] = jsonNewUser;
-    client.collection('games', function (err, collection) {
-        collection.findOne({_id:gameId}, function (err, cursor) {
-            if (!cursor) {
-                console.warn('There is no registered game with such id!');
-            } else {
-                collection.findOne(jsonUserExistsQuery/* {players.userId: {$exists:true}} */, function (err, cursor) {
-                    if (cursor) {
-                        console.warn('User is already registered in this game!');
-                    } else {
-                        collection.update({_id:gameId}, {$set:jsonUserQuery}, {safe:true}, function (err, objects) {
-                            if (err) console.warn(err.message);
-                        });
+/* This function interacts with game ID, not gameName! */
+exports.registerUserInGame = function (gameId, userObject, callback) {
+    if (gameId && userObject.name && userObject.language) {
+        if (!userObject.score) userObject.score = 0;
+        var userName = userObject.name.toLowerCase();
+        var jsonUserExistsQueryKey = 'players.' + userName;
+        //var jsonUserExistsQuery = {};
+        //jsonUserExistsQuery[jsonUserExistsQueryKey] = {$exists:true};
+        var jsonNewUser = {'score':userObject.score, 'language':userObject.language, 'clientUrl': 'http://10.0.104.233:3000/' + gameId + '/' + userName + '.zip'}; // STUB!!! url should be generated with zip package!
+        var jsonUserQuery = {};
+        jsonUserQuery[jsonUserExistsQueryKey] = jsonNewUser;
+        try {
+            var gameIdObject = new BSON.ObjectID(gameId);
+        } catch (Error) {
+            callback({err:'There is no registered game with such id!'});
+            return;
+        }
+        client.collection('games', function (err, collection) {
+            collection.findOne({_id:gameIdObject}, function (err, document) {
+                if (!document) {
+                    if (callback && typeof(callback) === 'function') {
+                        callback({err:'There is no registered game with such id!'});
+                        console.warn('There is no registered game with such id!');
                     }
-                });
-            }
+                } else {
+                    console.log(document.players[userName]);
+                        if ( document.players[userName]) {
+                            if (callback && typeof(callback) === 'function') {
+                                callback({err:'User with such name is already registered in this game!'});
+                            }
+                        } else {
+                                collection.update({_id:gameIdObject}, {$set:jsonUserQuery}, {safe:true}, function (err, objects) {
+                                    if (err) console.warn(err.message);
+                                    if (callback && typeof(callback) === 'function') {
+                                        callback(null, jsonNewUser.clientUrl);
+                                    }
+                                });
+                        }
+                }
+            });
         });
-    });
+    } else {
+        if (callback && typeof(callback) === 'function') {
+            console.warn("Cannot register user " + userName + " in game. Invalid input data");
+            callback({err:"Cannot register user " + userName + " in game. Invalid input data"});
+        }
+    }
+
 };
 
-exports.getUser = function (gameId, userId) {
+exports.getUser = function (gameName, userId) {
     var user;
     var jsonUserExistsQueryKey = 'players.' + userId;
     var jsonUserExistsQuery = {};
     jsonUserExistsQuery[jsonUserExistsQueryKey] = 1;
     client.collection('games', function (err, collection) {
-        collection.findOne({_id:gameId}, function (err, cursor) {
+        collection.findOne({name:gameName}, function (err, cursor) {
             if (!cursor) {
-                console.warn('There are no registered game with such id!');
+                console.warn('there is no registered game with such id!');
             } else {
-                collection.findOne({_id:gameId}, jsonUserExistsQuery, function (err, cursor) {
+                collection.findOne({name:gameName}, jsonUserExistsQuery, function (err, cursor) {
                     if (!cursor) {
                         console.warn('Such user is not registered in this game!');
                     } else {
@@ -101,18 +126,19 @@ exports.getUser = function (gameId, userId) {
     })
 };
 
-exports.getAllUsers = function (gameId) {
+exports.getAllUsers = function (gameName) {
     var users;
     //var usersCount;
     //client.open(function (err, client) {
     //    if (err) throw err;
     client.collection('games', function (err, collection) {
-        collection.findOne({_id:gameId}, function (err, cursor) {
+        collection.findOne({name:gameName}, function (err, cursor) {
             if (!cursor) {
-                console.warn('There are no registered game with such id!');
+                console.warn('there is no registered game with such id!');
             } else {
                 users = cursor.players;
-                console.dir('Registered users in game: ' + users);
+                console.log('Registered users in game: ');
+                console.dir(users);
             }
         });
     });
@@ -120,7 +146,7 @@ exports.getAllUsers = function (gameId) {
     return users;
 };
 
-exports.updateUserScore = function (gameId, userId, updateBy) {
+exports.updateUserScore = function (gameName, userId, updateBy) {
     var jsonUserExistsQueryKey = 'players.' + userId;
     var jsonUserExistsQuery = {};
     jsonUserExistsQuery[jsonUserExistsQueryKey] = {$exists:true};
@@ -131,7 +157,7 @@ exports.updateUserScore = function (gameId, userId, updateBy) {
     //client.open(function (err, client) {
     //    if (err) throw err;
     client.collection('games', function (err, collection) {
-        collection.findOne({_id:gameId}, function (err, cursor) {
+        collection.findOne({name:gameName}, function (err, cursor) {
                 if (!cursor) {
                     console.warn('There is no registered game with specified id!');
                 } else {
@@ -139,7 +165,7 @@ exports.updateUserScore = function (gameId, userId, updateBy) {
                         if (!cursor) {
                             console.warn('Such user is not registered in this game!');
                         } else {
-                            collection.update({_id:gameId}, {$inc:jsonUserUpdate/*{ 'players.userId.score':5 }*/}, {safe:true}, function (err, objects) {
+                            collection.update({name:gameName}, {$inc:jsonUserUpdate/*{ 'players.userId.score':5 }*/}, {safe:true}, function (err, objects) {
                                 if (err) console.warn(err.message);
                                 if (err && err.message.indexOf('E11000 ') !== -1) {
                                 }

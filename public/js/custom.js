@@ -1,3 +1,5 @@
+var socket;
+
 (function () {
     $("#timerButton").click(function () {
         if ($(this).hasClass("btn-primary")) {
@@ -10,32 +12,55 @@
     });
 })();
 
-$('#create-game').click(function () {
-    var socket;
-    var serializedForm = $(this).closest('#create-game-form').serializeArray();
-    if (navigator.userAgent.toLowerCase().indexOf('chrome') != -1) {
+window.onload = function () {
+    if (navigator.userAgent.toLowerCase().indexOf('chrome') !== -1) {
         socket = io.connect('http://10.0.104.233:8080', {'transports':['xhr-polling']});
     } else {
         socket = io.connect('http://10.0.104.233:8080');
     }
+};
 
-    console.log(socket);
-    socket.on('connect', function () {
-        socket.emit('createGame', serializedForm);
+$('#create-game, #connect-game').click(function () {
+    var buttonId = $(this).attr('id');
+    var createGameForm = $(this).closest('#create-game-form').serializeArray();
+    var connectGameForm = $(this).closest('#connect-game-form').serializeArray();
+
+   // socket.on('connect', function () {
+        switch (buttonId) {
+            case 'create-game':
+                socket.emit('createGame', createGameForm);
+                break;
+            case 'connect-game':
+                socket.emit('connectGame', connectGameForm);
+                break;
+        }
+
         socket.on('message', function (msg) {
-            if (msg.event){
+            if (msg.event) {
                 switch (msg.event) {
                     case 'gameCreated':
-                        alert('Game ' + msg.name + ' was successfully created! ');
+                        //alert('Game ' + msg.name + ' was successfully created! ');
+                        $('#create-status').text('Game "' + msg.name + '" was successfully created!');
                         $('#game-pass').val(msg._id);
+                        $('#create-game').attr("disabled", "disabled");
                         break;
                     case 'gameCreationFailed':
-                        alert('Game ' + msg.name + ' was not created! Error message: ' + msg.errorMessage);
+                        //alert('Game ' + msg.name + ' was not created! Error message: ' + msg.errorMessage);
+                        $('#create-status').text('Game "' + msg.name + '" was not created! Error message: ' + msg.errorMessage);
+                        break;
+                    case 'userRegistered':
+                        //alert('User ' + msg.name + ' was successfully registered! ');
+                        $('#connect-status').text('User "' + msg.name + '" was successfully registered! ');
+                        $('#client-url').val(msg.clientUrl);
+                        break;
+                    case 'userRegisteringFailed':
+                        //alert('User ' + msg.name + ' failed to register! Error message: ' + msg.errorMessage);
+                        $('#connect-status').text('User "' + msg.name + '" failed to register! Error message: ' + msg.errorMessage);
+                        break;
                 }
-                socket.disconnect();
+                //socket.disconnect();
             }
         });
-    });
     /*onConnectFunc();
      function onConnectFunc() {
      if (socket) {
@@ -44,12 +69,16 @@ $('#create-game').click(function () {
      setTimeout(onConnectFunc(), 50);
      }
      }*/
-    $(this).attr("disabled", "disabled");
+    //$(this).attr("disabled", "disabled");
 });
 
-$('#connect-game').click(function() {
-
+$('#client-url').click(function() {
+    if($(this).val()){
+        window.open($(this).val());
+        return false;
+    }
 });
+
 /*
  window.onload = function () {
  var socket;

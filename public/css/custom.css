@@ -25,3 +25,7 @@ input[readonly] {
 #timerButton {
     width: 90px;
 }
+
+#client-url {
+    cursor: pointer;
+}

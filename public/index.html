@@ -58,7 +58,8 @@
             <p>Try your coding skills and compete with your friends in exciting multi-language coding dojo game</p>
 
             <div id="form-holder" class="centered" style=" width: 630px;;">
-                <form id="create-game-form" class="well pull-left" method="get" style="width: 270px; height:100%; text-align: center;">
+                <form id="create-game-form" class="well pull-left" method="get"
+                      style="width: 270px; height:100%; text-align: center;">
 
                     <div style="text-align: left;">
                         <label class="help-inline">Game Name</label>
@@ -72,29 +73,46 @@
                             <option>120 minutes</option>
                         </select>
                         <label class="help-inline ">Link to Admin Page:</label>
-                        <input type="text" class="span3" placeholder="Host new game to get the link" name="game-link" readonly>
+                        <input type="text" class="span3" placeholder="Host new game to get the link" name="game-link"
+                               readonly>
                         <label class="help-inline ">Unique Pass for the Game:</label>
-                        <input type="text" class="span3" placeholder="Host new game to get the pass" id="game-pass"  name="game-pass" readonly>
+                        <input type="text" class="span3" placeholder="Host new game to get the pass" id="game-pass"
+                               name="game-pass" readonly>
                     </div>
+                    <span id="create-status"></span>
                     <br/>
-                    <button type="button" id="create-game" class="btn btn-primary btn-large centered">Host New Game</button>
+                    <br/>
+                    <button type="button" id="create-game" class="btn btn-primary btn-large centered">Host New Game
+                    </button>
                 </form>
 
-                <form method="get" class="well pull-left" style="width: 270px; height:100%; text-align: center; background-color: white; margin-left: 30px;">
+                <form id="connect-game-form" class="well pull-left"
+                      style="width: 270px; height:100%; text-align: center; background-color: white; margin-left: 30px;">
                     <div style="text-align: left;">
-                        <label class="help-inline" style="width: 150px;">Unique Game Pass: </label>
-                        <input type="text" class="span3" placeholder="Type in password to join game">
-                        <label class="help-inline " style="width: 150px;">Your Name: </label>
-                        <input type="text" class="span3" placeholder="Type in your name for this game">
-                        <label class="help-inline " style="width: 150px;">Select Your Language: </label>
-                        <select class="span3">
-                            <option>JavaScript</option>
-                            <option>Java</option>
-                            <option>C#</option>
-                        </select>
-                        <label class="help-inline ">Download Your Game Client:</label>
-                        <input type="text" class="span3" placeholder="Connect to a game first" readonly>
+                        <fieldset>
+                            <div>
+                                <label class="help-inline" style="width: 150px;">Unique Game Pass: </label>
+                                <input type="text" class="span3" placeholder="Type in password to join game"
+                                       name="game-pass">
+                            </div>
+                            <div>
+                                <label class="help-inline " style="width: 150px;">Your Name: </label>
+                                <input type="text" class="span3" placeholder="Type in your name for this game"
+                                       name="user-name">
+                            </div>
+                            <label class="help-inline " style="width: 150px;">Select Your Language: </label>
+                            <select class="span3" name="language">
+                                <option>JavaScript</option>
+                                <option>Java</option>
+                                <option>C#</option>
+                            </select>
+                            <label class="help-inline ">Download Your Game Client:</label>
+                            <input type="text" id="client-url" class="span3" placeholder="Connect to a game first"
+                                   readonly>
+                        </fieldset>
                     </div>
+                    <span id="connect-status"></span>
+                    </br>
                     </br>
                     <button type="button" id="connect-game" class="btn btn-large centered">Connect to Game</button>
                 </form>
