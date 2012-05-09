@@ -26,6 +26,12 @@ input[readonly] {
     width: 90px;
 }
 
-#client-url {
+.client-url-ready {
+    color: #0088CC;
+}
+
+.client-url-ready:hover {
     cursor: pointer;
+    color: #005580;
+    text-decoration: underline;
 }

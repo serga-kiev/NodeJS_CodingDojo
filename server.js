@@ -37,12 +37,14 @@ dbInterface.open(
 
 dbInterface.registerUserInGame("4f78bf358f7148f819000002", {name: 'vanya12', language: 'JavaScript', score: 10});
 dbInterface.getAllUsers("22332233");
-dbInterface.getUser("22332233", "vanya12");
-dbInterface.updateUserScore("22332233", "vanya12", 5);
+dbInterface.getUser("Titan", "4f7dcaeafa6ec5f01c000002");
+dbInterface.updateUserScore("Titan", "4f7dcaeafa6ec5f01c000002", 5);
 
 
 /* SocketIO server instance */
-var io = require('socket.io').listen(8080);
+var _SERVER_IP = '10.0.104.233'; // IP of the server, where nodejs is being run. Hardcoded at the moment
+var serverPort = 8080;
+var io = require('socket.io').listen(serverPort);
 io.set('log level', 1);
 
 io.sockets.on('connection', function (socket) {
@@ -66,32 +68,40 @@ io.sockets.on('connection', function (socket) {
                 socket.json.send({'event':'gameCreationFailed', 'name':gameName, 'errorMessage': err.err});
                 console.warn(err.err);
             } else {
-                socket.json.send({'event':'gameCreated', 'name':gameName, '_id': gameId});
+                socket.json.send({'event':'gameCreated', 'name':gameName, '_id': gameId, 'adminUrl': 'http://' + _SERVER_IP + ':' + _FRONT_PORT + '/admin-page.html?gameId=' + gameId});
             }
         });
     });
 
-    socket.on('connectGame', function (serializedForm) {
+    socket.on('joinGame', function (serializedForm) {
         var gamePass = serializedForm[0].value;
         var userName = serializedForm[1].value;
         var userLanguage = serializedForm[2].value;
+        var jsonUser = {'nickname': userName,
+                        'language': userLanguage,
+                        'score':0};
 
         console.log("Connect game event was emitted");
         console.log("Game pass: " + gamePass);
-        console.log("User name: " + userName);
+        console.log("User language: " + userLanguage);
 
-        dbInterface.registerUserInGame(gamePass, {name: userName, language: userLanguage}, function(err, clientUrl) {
+        dbInterface.registerUserInGame(gamePass, jsonUser, function(err, userId) {
             if (err) {
                 socket.json.send({'event':'userRegisteringFailed', 'name':userName, 'errorMessage': err.err});
                 console.warn(err.err);
             } else {
-                socket.json.send({'event':'userRegistered', 'name':userName, 'clientUrl': clientUrl});
-                customUtils.generateZipPackage({'gameName': gamePass, 'name':userName, 'userLanguage': userLanguage});
+                socket.json.send({'event':'userRegistered', 'name':userName, 'clientUrl': 'http://' + _SERVER_IP + ':' + _FRONT_PORT + '/temp/' + userId + '/coding-dojo-client.zip'});
+                customUtils.generateZipPackage({'gameName': gamePass, 'name':userName, 'language': userLanguage, 'userId':userId,
+                    'serverIp': _SERVER_IP, 'serverPort': serverPort});
             }
         });
     });
 
-
+    socket.on('getPlayersList', function (gameId) {
+        dbInterface.getAllUsers(gameId, function(err, gameName, users){
+            socket.json.send({'event': 'playersList', 'gameName': gameName, 'users': users});
+        });
+    });
 
 
     socket.on('userGreet', function (usrId) {

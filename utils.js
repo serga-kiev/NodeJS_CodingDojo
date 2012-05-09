@@ -4,10 +4,11 @@ var fs = require('fs');
 var zip = require('node-native-zip');
 var folder = require('./folder.js');
 
-var CLEAN_CLIENT_FOLDER = __dirname + '\\clients\\Coding-dojo-java-client';
+var CLEAN_CLIENT_FOLDER = __dirname + '\\clients\\Coding-dojo-client';
 
-exports.generateZipPackage = function (jsonUser, propertiesFilePath) {
-    var USER_FOLDER = 'temp/' + jsonUser.gameName + '/' + jsonUser.name;
+exports.generateZipPackage = function (jsonUser) {
+    var USER_FOLDER = 'public/temp/' + /*jsonUser.gameName + '/' + */ jsonUser.userId;
+    console.log('USER_FOLDER: ' + USER_FOLDER);
     generatePropertiesFile(jsonUser, function () {
         zipUpAFolder(CLEAN_CLIENT_FOLDER, USER_FOLDER, function (err, data) {
             if (!err) {
@@ -18,18 +19,22 @@ exports.generateZipPackage = function (jsonUser, propertiesFilePath) {
     });
 };
 
-var generatePropertiesFile = function (jsonUser, callback) {
-    var USER_FOLDER = 'temp/' + jsonUser.gameName + '/' + jsonUser.name;
+var generatePropertiesFile = function (jsonData, callback) {
+    var USER_FOLDER = 'public/temp/' + /*jsonData.gameName + '/' + */jsonData.userId;
+    var PROPERTIES_HOME = 'clients/Coding-dojo-client/src/main/resources'; //Hardcoded! Should match user's project client
     var PROPERTIES_FILENAME = 'dojo-client.properties';
     var propertiesStrings = [
         '#Coding dojo client properties',
-        'Game Pass=' + jsonUser.gameName,
-        'User Name=' + jsonUser.name,
-        'Programming Language=' + jsonUser.language
+        'game_pass=' + jsonData.gameName,
+        'server_ip=' + jsonData.serverIp,
+        'server_port=' + jsonData.serverPort,
+        'user_name=' + jsonData.name,
+        'user_id=' + jsonData.userId,
+        'programming_language=' + jsonData.language
     ];
     mkdir_p(USER_FOLDER, function (err) {
         if (err) console.log(err);
-        fs.writeFile(__dirname + '\\' + USER_FOLDER + '\\' + PROPERTIES_FILENAME, propertiesStrings.join('\n'), function (err) {
+        fs.writeFile(__dirname + '\\' + PROPERTIES_HOME + '\\' + PROPERTIES_FILENAME, propertiesStrings.join('\n'), function (err) {
             if (err) throw err;
             console.log('Properties file is saved!');
             if (callback && typeof(callback) === 'function') callback();
