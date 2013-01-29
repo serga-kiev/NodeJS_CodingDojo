@@ -57,7 +57,7 @@ window.onload = function () {
             console.log('Message from server received!');
             switch (msg.event) {
                 case 'gameCreated':
-                    //alert('Game ' + msg.name + ' was successfully created! ');
+                    ///alert('Game ' + msg.name + ' was successfully created! ');
                     $('#create-status').text('Game "' + msg.name + '" was successfully created!');
                     $('#game-pass').val(msg._id);
                     $('#link-to-admin').val(msg.adminUrl);
